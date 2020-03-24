@@ -112,6 +112,15 @@ class TranslatableListener extends MappedEventSubscriber
     private $translationInDefaultLocale = array();
 
     /**
+     * By default translatable fields are saved in the current
+     * locale. Set this property to true if you want to provide
+     * and update translations only explicitly.
+     *
+     * @var bool
+     */
+    private $provideTranslationsExplicitly = false;
+
+    /**
      * Specifies the list of events to listen
      *
      * @return array
@@ -284,6 +293,31 @@ class TranslatableListener extends MappedEventSubscriber
     public function getListenerLocale()
     {
         return $this->locale;
+    }
+
+    /**
+     * Enable or disable option to provide
+     * translations explicitly
+     *
+     * @param boolean $bool
+     *
+     * @return static
+     */
+    public function setProvideTranslationsExplicitly($bool)
+    {
+        $this->provideTranslationsExplicitly = (bool) $bool;
+
+        return $this;
+    }
+
+    /**
+     * Weather or not is providing translations explicitly
+     *
+     * @return boolean
+     */
+    public function getProvideTranslationsExplicitly()
+    {
+        return $this->provideTranslationsExplicitly;
     }
 
     /**
@@ -518,7 +552,7 @@ class TranslatableListener extends MappedEventSubscriber
             throw new \Gedmo\Exception\InvalidArgumentException('Locale or language cannot be empty and must be set through Listener or Entity');
         }
     }
-    
+
     /**
      * Check if the given locale is valid
      *
@@ -554,7 +588,7 @@ class TranslatableListener extends MappedEventSubscriber
         // check for the availability of the primary key
         $objectId = $wrapped->getIdentifier();
         // load the currently used locale
-        $locale = $this->getTranslatableLocale($object, $meta, $om);
+        $locale = !$this->provideTranslationsExplicitly ? $this->getTranslatableLocale($object, $meta, $om) : $this->defaultLocale;
 
         $uow = $om->getUnitOfWork();
         $oid = spl_object_hash($object);
